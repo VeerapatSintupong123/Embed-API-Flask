@@ -1,40 +1,39 @@
-from flask import Flask, request, render_template
 import os
-import smtplib
-from email.mime.text import MIMEText
+import numpy as np
+import cv2 as cv
+from flask import Flask, request, render_template, jsonify, redirect
+from utils import AreaSegmentor, image_from_base64, count_circles, send_email, save_email
+
 from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
+    
+@app.route('/process', methods=['POST'])
+def count_object():
+    print(request.json)
+    data = request.json
+    image_string = data.get("image_string")
+    cluster = 2
 
-
-def send_email(receiver_email, subject, body):
-    sender_email = os.getenv("EMAIL")
-    password = os.getenv("PASSWORD")
-
+    if not image_string:
+        return jsonify({"error": "No image provided"}), 400
+    
     try:
-        msg = MIMEText(body)
-        msg['From'] = sender_email
-        msg['To'] = receiver_email
-        msg['Subject'] = subject
-
-        with smtplib.SMTP('smtp.gmail.com', 587) as server:
-            server.starttls()
-            server.login(sender_email, password)
-            server.send_message(msg)
-        return "Email sent!"
+        image = image_from_base64(image_string.strip().split(',')[1])
+        segment = cv.cvtColor(AreaSegmentor(np.array(image)).segment_road(), cv.COLOR_BGR2GRAY)
+        count = count_circles(segment)
+        return jsonify({"count": count, "cluster": cluster})
     except Exception as e:
-        return f"Error: {e}"
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
         email = request.form['email']
-        subject = request.form['subject']
-        message = request.form['message']
-        return send_email(email, subject, message)
+        save_email(email)
+        return redirect('https://youtube.com')
     return render_template('form.html')
-
 
 if __name__ == '__main__':
     app.run(debug=True, port=os.getenv("PORT", default=5000))
