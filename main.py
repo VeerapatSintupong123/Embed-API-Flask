@@ -31,8 +31,11 @@ def count_object():
 def index():
     if request.method == 'POST':
         email = request.form['email']
-        save_email(email)
-        return redirect('https://youtube.com')
+        if email:
+            save_email(email)
+            return redirect('https://youtube.com')
+        else:
+            return redirect('/')
     return render_template('form.html')
 
 if __name__ == '__main__':
