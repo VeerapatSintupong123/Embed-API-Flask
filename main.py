@@ -11,7 +11,6 @@ app = Flask(__name__)
     
 @app.route('/process', methods=['POST'])
 def count_object():
-    print(request.json)
     data = request.json
     image_string = data.get("image_string")
     cluster = 2
@@ -23,7 +22,7 @@ def count_object():
         image = image_from_base64(image_string.strip().split(',')[1])
         segment = cv.cvtColor(AreaSegmentor(np.array(image)).segment_road(), cv.COLOR_BGR2GRAY)
         count = count_circles(segment)
-        return jsonify({"count": count, "cluster": cluster})
+        return jsonify({"status":True, "data": {"count": count, "cluster": cluster}})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
