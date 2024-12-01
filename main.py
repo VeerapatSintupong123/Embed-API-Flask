@@ -66,7 +66,7 @@ def index():
         email = request.form['email']
         if email:
             save_email(email)
-            return redirect('https://youtube.com')
+            return redirect('https://fish-tank-embedded-front.vercel.app/')
         else:
             return redirect('/')
     return render_template('form.html')
