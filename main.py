@@ -1,5 +1,6 @@
 import os
 import numpy as np
+from flask_cors import CORS
 from flask import Flask, request, render_template, jsonify, redirect
 from utils import AreaSegmentor, image_from_base64, count_specific_color, send_email, save_email
 
@@ -7,6 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
+CORS(app)
 
 body_html = """
 <html>
